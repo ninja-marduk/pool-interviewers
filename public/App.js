@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { firestore } from './firebaseConfig';
@@ -14,6 +13,8 @@ function App() {
   const [pairs, setPairs] = useState([]);
   const [averageOldCounter, setAverageOldCounter] = useState(0);
   const [averageNewCounter, setAverageNewCounter] = useState(0);
+  const [expertPairs, setExpertPairs] = useState([]);
+  const [tlMobilePairs, setTlMobilePairs] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(firestore, "interviewers"), (snapshot) => {
@@ -64,7 +65,7 @@ function App() {
     return total / interviewers.length;
   };
 
-  const generatePairs = async () => {
+  const generatePairsTL = async () => {
     const tlNew = interviewers.filter(i => i.role === 'TL' && i.seniority === 'New');
     const tlOld = interviewers.filter(i => i.role === 'TL' && i.seniority === 'Old');
 
@@ -113,6 +114,76 @@ function App() {
     setPairs([newPair]);
   };
 
+  const generatePairsExpert = async () => {
+    const experts = interviewers.filter(i => i.role === 'Expert');
+    if (experts.length < 2) {
+      alert('Not enough experts to generate pairs');
+      return;
+    }
+
+    const firstExpert = weightedRandomInterviewer(experts);
+    const secondExpert = weightedRandomInterviewer(experts.filter(i => i.id !== firstExpert.id));
+
+    if (!firstExpert || !secondExpert) {
+      alert('Error generating pairs');
+      return;
+    }
+
+    // Actualizar los contadores en Firestore
+    const firstExpertRef = doc(firestore, "interviewers", firstExpert.id);
+    const secondExpertRef = doc(firestore, "interviewers", secondExpert.id);
+
+    await updateDoc(firstExpertRef, {
+      counter: increment(1)
+    });
+
+    await updateDoc(secondExpertRef, {
+      counter: increment(1)
+    });
+
+    // Crear el par y actualizar el estado
+    const newPair = {
+      first: `${firstExpert.name}`,
+      second: `${secondExpert.name}`
+    };
+    setExpertPairs([newPair]);
+  };
+
+  const generatePairsTlMobile = async () => {
+    const tlMobile = interviewers.filter(i => i.role === 'TL Mobile');
+    if (tlMobile.length < 2) {
+      alert('Not enough TL Mobiles to generate pairs');
+      return;
+    }
+
+    const firstTlMobile = weightedRandomInterviewer(tlMobile);
+    const secondTlMobile = weightedRandomInterviewer(tlMobile.filter(i => i.id !== firstTlMobile.id));
+
+    if (!firstTlMobile || !secondTlMobile) {
+      alert('Error generating pairs');
+      return;
+    }
+
+    // Actualizar los contadores en Firestore
+    const firstTlMobileRef = doc(firestore, "interviewers", firstTlMobile.id);
+    const secondTlMobileRef = doc(firestore, "interviewers", secondTlMobile.id);
+
+    await updateDoc(firstTlMobileRef, {
+      counter: increment(1)
+    });
+
+    await updateDoc(secondTlMobileRef, {
+      counter: increment(1)
+    });
+
+    // Crear el par y actualizar el estado
+    const newPair = {
+      first: `${firstTlMobile.name}`,
+      second: `${secondTlMobile.name}`
+    };
+    setTlMobilePairs([newPair]);
+  };
+
   return (
     <div className="App">
       <h1>Pool Interviewers Pairs Generator</h1>
@@ -120,10 +191,30 @@ function App() {
         <p>Average Old Counter: {averageOldCounter.toFixed(2)}</p>
         <p>Average New Counter: {averageNewCounter.toFixed(2)}</p>
       </div>
-      <InterviewersForm addInterviewer={addInterviewer} />
-      <button onClick={generatePairs}>Generate Pairs</button>
-      <PairsDisplay pairs={pairs} />
-      <InterviewersList interviewers={interviewers} />
+      
+      <div className="section">
+        <h2>Team Leaders (TL)</h2>
+        <InterviewersForm addInterviewer={addInterviewer} role="TL" />
+        <button onClick={generatePairsTL}>Generate TL Pairs</button>
+        <PairsDisplay pairs={pairs} />
+        <InterviewersList interviewers={interviewers.filter(i => i.role === 'TL')} />
+      </div>
+      
+      <div className="section">
+        <h2>Experts</h2>
+        <InterviewersForm addInterviewer={addInterviewer} role="Expert" />
+        <button onClick={generatePairsExpert}>Generate Expert Pairs</button>
+        <PairsDisplay pairs={expertPairs} />
+        <InterviewersList interviewers={interviewers.filter(i => i.role === 'Expert')} />
+      </div>
+      
+      <div className="section">
+        <h2>TL Mobile</h2>
+        <InterviewersForm addInterviewer={addInterviewer} role="TL Mobile" />
+        <button onClick={generatePairsTlMobile}>Generate TL Mobile Pairs</button>
+        <PairsDisplay pairs={tlMobilePairs} />
+        <InterviewersList interviewers={interviewers.filter(i => i.role === 'TL Mobile')} />
+      </div>
     </div>
   );
 }

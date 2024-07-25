@@ -1,4 +1,3 @@
-/* src/App.css */
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f9;
@@ -93,49 +92,18 @@ li {
   font-size: 16px;
 }
 
-.generated-pairs {
-  background: #007bff;
-  color: white;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-}
-
-.generated-pairs ul {
-  padding: 0;
-}
-
-.generated-pairs li {
-  background: #0056b3;
-  color: white;
-}
-
-.table-container {
+.pairs-container {
+  text-align: center;
   margin-top: 20px;
-  width: 100%;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-table th, table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-table th {
+.pair-item, .selected-expert-item {
   background-color: #007bff;
   color: white;
-}
-
-table tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-table tr:hover {
-  background-color: #ddd;
+  padding: 10px;
+  margin: 10px auto;
+  border-radius: 5px;
+  width: fit-content;
+  font-weight: bold;
+  display: inline-block;
 }

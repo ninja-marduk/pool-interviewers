@@ -1,27 +1,33 @@
-// src/components/InterviewersForm.js
 import React, { useState } from 'react';
-import { Timestamp } from 'firebase/firestore';
 
-function InterviewersForm({ addInterviewer }) {
+function InterviewersForm({ addInterviewer, role }) {
   const [name, setName] = useState('');
-  const [role, setRole] = useState('TL');
   const [dateJoined, setDateJoined] = useState('');
   const [seniority, setSeniority] = useState('New');
+  const [soMobile, setSoMobile] = useState('Android');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const interviewer = {
       name,
       role,
-      dateJoined: dateJoined,
-      seniority,
+      dateJoined,
       counter: 0
     };
+
+    if (role === 'TL') {
+      interviewer.seniority = seniority;
+    }
+
+    if (role === 'TL Mobile') {
+      interviewer.soMobile = soMobile;
+    }
+
     await addInterviewer(interviewer);
     setName('');
-    setRole('TL');
     setDateJoined('');
     setSeniority('New');
+    setSoMobile('Android');
   };
 
   return (
@@ -33,22 +39,25 @@ function InterviewersForm({ addInterviewer }) {
         onChange={(e) => setName(e.target.value)} 
         required 
       />
-      <select value={role} onChange={(e) => setRole(e.target.value)}>
-        <option value="TL">TL</option>
-        <option value="Expert">Expert</option>
-        <option value="TL Mobile">TL Mobile</option>
-      </select>
+      {role === 'TL' && (
+        <select value={seniority} onChange={(e) => setSeniority(e.target.value)}>
+          <option value="New">New</option>
+          <option value="Old">Old</option>
+        </select>
+      )}
+      {role === 'TL Mobile' && (
+        <select value={soMobile} onChange={(e) => setSoMobile(e.target.value)}>
+          <option value="Android">Android</option>
+          <option value="iOS">iOS</option>
+        </select>
+      )}
       <input 
         type="date" 
         value={dateJoined} 
         onChange={(e) => setDateJoined(e.target.value)} 
         required 
       />
-      <select value={seniority} onChange={(e) => setSeniority(e.target.value)}>
-        <option value="New">New</option>
-        <option value="Old">Old</option>
-      </select>
-      <button type="submit">Add Interviewer</button>
+      <button type="submit">Add {role}</button>
     </form>
   );
 }

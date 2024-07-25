@@ -1,10 +1,8 @@
 // src/components/InterviewersForm.js
 import React, { useState } from 'react';
-import { Timestamp } from 'firebase/firestore';
 
-function InterviewersForm({ addInterviewer }) {
+function InterviewersForm({ addInterviewer, role }) {
   const [name, setName] = useState('');
-  const [role, setRole] = useState('TL');
   const [dateJoined, setDateJoined] = useState('');
   const [seniority, setSeniority] = useState('New');
 
@@ -13,13 +11,12 @@ function InterviewersForm({ addInterviewer }) {
     const interviewer = {
       name,
       role,
-      dateJoined: dateJoined,
-      seniority,
+      dateJoined,
+      seniority: role === 'TL' ? seniority : undefined,
       counter: 0
     };
     await addInterviewer(interviewer);
     setName('');
-    setRole('TL');
     setDateJoined('');
     setSeniority('New');
   };
@@ -33,22 +30,19 @@ function InterviewersForm({ addInterviewer }) {
         onChange={(e) => setName(e.target.value)} 
         required 
       />
-      <select value={role} onChange={(e) => setRole(e.target.value)}>
-        <option value="TL">TL</option>
-        <option value="Expert">Expert</option>
-        <option value="TL Mobile">TL Mobile</option>
-      </select>
+      {role === 'TL' && (
+        <select value={seniority} onChange={(e) => setSeniority(e.target.value)}>
+          <option value="New">New</option>
+          <option value="Old">Old</option>
+        </select>
+      )}
       <input 
         type="date" 
         value={dateJoined} 
         onChange={(e) => setDateJoined(e.target.value)} 
         required 
       />
-      <select value={seniority} onChange={(e) => setSeniority(e.target.value)}>
-        <option value="New">New</option>
-        <option value="Old">Old</option>
-      </select>
-      <button type="submit">Add Interviewer</button>
+      <button type="submit">Add {role}</button>
     </form>
   );
 }
