@@ -1,4 +1,3 @@
-// src/components/PairsDisplay.js
 import React from 'react';
 import './PairsDisplay.css';
 
@@ -9,7 +8,7 @@ function PairsDisplay({ pairs }) {
       <ul>
         {pairs.map((pair, index) => (
           <li key={index} className="pair-item">
-            {pair.new} & {pair.old}
+            {pair.new ? `${pair.new} & ${pair.old}` : `${pair.first} & ${pair.second}`}
           </li>
         ))}
       </ul>

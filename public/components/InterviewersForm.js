@@ -1,10 +1,10 @@
-// src/components/InterviewersForm.js
 import React, { useState } from 'react';
 
 function InterviewersForm({ addInterviewer, role }) {
   const [name, setName] = useState('');
   const [dateJoined, setDateJoined] = useState('');
   const [seniority, setSeniority] = useState('New');
+  const [soMobile, setSoMobile] = useState('Android');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,13 +12,22 @@ function InterviewersForm({ addInterviewer, role }) {
       name,
       role,
       dateJoined,
-      seniority: role === 'TL' ? seniority : undefined,
       counter: 0
     };
+
+    if (role === 'TL') {
+      interviewer.seniority = seniority;
+    }
+
+    if (role === 'TL Mobile') {
+      interviewer.soMobile = soMobile;
+    }
+
     await addInterviewer(interviewer);
     setName('');
     setDateJoined('');
     setSeniority('New');
+    setSoMobile('Android');
   };
 
   return (
@@ -34,6 +43,12 @@ function InterviewersForm({ addInterviewer, role }) {
         <select value={seniority} onChange={(e) => setSeniority(e.target.value)}>
           <option value="New">New</option>
           <option value="Old">Old</option>
+        </select>
+      )}
+      {role === 'TL Mobile' && (
+        <select value={soMobile} onChange={(e) => setSoMobile(e.target.value)}>
+          <option value="Android">Android</option>
+          <option value="iOS">iOS</option>
         </select>
       )}
       <input 

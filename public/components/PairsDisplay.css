@@ -1,17 +1,15 @@
-/* src/components/PairsDisplay.css */
 .pairs-container {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  .pair-item {
-    background-color: #007bff;
-    color: white;
-    padding: 10px;
-    margin: 10px auto;
-    border-radius: 5px;
-    width: fit-content;
-    font-weight: bold;
-    display: inline-block;
-  }
-  
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pair-item {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  margin: 10px auto;
+  border-radius: 5px;
+  width: fit-content;
+  font-weight: bold;
+  display: inline-block;
+}

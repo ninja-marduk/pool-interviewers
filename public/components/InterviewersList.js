@@ -1,4 +1,3 @@
-// src/components/InterviewersList.js
 import React from 'react';
 import './InterviewersList.css';
 
@@ -20,6 +19,7 @@ function InterviewersList({ interviewers }) {
             <th>Role</th>
             <th>Date Joined</th>
             <th>Seniority</th>
+            <th>SO Mobile</th>
             <th>Interviews</th>
           </tr>
         </thead>
@@ -31,7 +31,8 @@ function InterviewersList({ interviewers }) {
                 <td>{interviewer.name}</td>
                 <td>{interviewer.role}</td>
                 <td>{dateJoined}</td>
-                <td>{interviewer.seniority}</td>
+                <td>{interviewer.seniority || 'N/A'}</td>
+                <td>{interviewer.soMobile || 'N/A'}</td>
                 <td>{interviewer.counter}</td>
               </tr>
             );

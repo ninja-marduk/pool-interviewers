@@ -13,8 +13,9 @@ function App() {
   const [pairs, setPairs] = useState([]);
   const [averageOldCounter, setAverageOldCounter] = useState(0);
   const [averageNewCounter, setAverageNewCounter] = useState(0);
-  const [expertPairs, setExpertPairs] = useState([]);
-  const [tlMobilePairs, setTlMobilePairs] = useState([]);
+  const [expert, setExpert] = useState(null);
+  const [tlMobileAndroid, setTlMobileAndroid] = useState(null);
+  const [tlMobileIOS, setTlMobileIOS] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(firestore, "interviewers"), (snapshot) => {
@@ -114,74 +115,67 @@ function App() {
     setPairs([newPair]);
   };
 
-  const generatePairsExpert = async () => {
+  const generateExpert = async () => {
     const experts = interviewers.filter(i => i.role === 'Expert');
-    if (experts.length < 2) {
-      alert('Not enough experts to generate pairs');
+    if (experts.length === 0) {
+      alert('No experts available');
       return;
     }
 
-    const firstExpert = weightedRandomInterviewer(experts);
-    const secondExpert = weightedRandomInterviewer(experts.filter(i => i.id !== firstExpert.id));
+    const selectedExpert = weightedRandomInterviewer(experts);
 
-    if (!firstExpert || !secondExpert) {
-      alert('Error generating pairs');
+    if (!selectedExpert) {
+      alert('Error selecting expert');
       return;
     }
 
-    // Actualizar los contadores en Firestore
-    const firstExpertRef = doc(firestore, "interviewers", firstExpert.id);
-    const secondExpertRef = doc(firestore, "interviewers", secondExpert.id);
+    // Actualizar el contador en Firestore
+    const expertRef = doc(firestore, "interviewers", selectedExpert.id);
 
-    await updateDoc(firstExpertRef, {
+    await updateDoc(expertRef, {
       counter: increment(1)
     });
 
-    await updateDoc(secondExpertRef, {
-      counter: increment(1)
+    // Actualizar el estado
+    setExpert({
+      name: selectedExpert.name,
+      counter: selectedExpert.counter + 1
     });
-
-    // Crear el par y actualizar el estado
-    const newPair = {
-      first: `${firstExpert.name}`,
-      second: `${secondExpert.name}`
-    };
-    setExpertPairs([newPair]);
   };
 
-  const generatePairsTlMobile = async () => {
-    const tlMobile = interviewers.filter(i => i.role === 'TL Mobile');
-    if (tlMobile.length < 2) {
-      alert('Not enough TL Mobiles to generate pairs');
+  const generateTlMobile = async (os) => {
+    const tlMobile = interviewers.filter(i => i.role === 'TL Mobile' && i.soMobile === os);
+    if (tlMobile.length === 0) {
+      alert(`No TL Mobile available for ${os}`);
       return;
     }
 
-    const firstTlMobile = weightedRandomInterviewer(tlMobile);
-    const secondTlMobile = weightedRandomInterviewer(tlMobile.filter(i => i.id !== firstTlMobile.id));
+    const selectedTlMobile = weightedRandomInterviewer(tlMobile);
 
-    if (!firstTlMobile || !secondTlMobile) {
-      alert('Error generating pairs');
+    if (!selectedTlMobile) {
+      alert(`Error selecting TL Mobile for ${os}`);
       return;
     }
 
-    // Actualizar los contadores en Firestore
-    const firstTlMobileRef = doc(firestore, "interviewers", firstTlMobile.id);
-    const secondTlMobileRef = doc(firestore, "interviewers", secondTlMobile.id);
+    // Actualizar el contador en Firestore
+    const tlMobileRef = doc(firestore, "interviewers", selectedTlMobile.id);
 
-    await updateDoc(firstTlMobileRef, {
+    await updateDoc(tlMobileRef, {
       counter: increment(1)
     });
 
-    await updateDoc(secondTlMobileRef, {
-      counter: increment(1)
-    });
-
-    // Crear el par y actualizar el estado
-    const newPair = {
-      first: `${firstTlMobile.name}`,
-      second: `${secondTlMobile.name}`
-    };
-    setTlMobilePairs([newPair]);
+    // Actualizar el estado
+    if (os === 'Android') {
+      setTlMobileAndroid({
+        name: selectedTlMobile.name,
+        counter: selectedTlMobile.counter + 1
+      });
+    } else {
+      setTlMobileIOS({
+        name: selectedTlMobile.name,
+        counter: selectedTlMobile.counter + 1
+      });
+    }
   };
 
   return (
@@ -203,16 +197,45 @@ function App() {
       <div className="section">
         <h2>Experts</h2>
         <InterviewersForm addInterviewer={addInterviewer} role="Expert" />
-        <button onClick={generatePairsExpert}>Generate Expert Pairs</button>
-        <PairsDisplay pairs={expertPairs} />
+        <button onClick={generateExpert}>Select Expert</button>
+        {expert && (
+          <div className="pairs-container">
+            <h2>Selected Expert</h2>
+            <ul>
+              <li className="selected-expert-item">
+                {expert.name} - Interviews: {expert.counter}
+              </li>
+            </ul>
+          </div>
+        )}
         <InterviewersList interviewers={interviewers.filter(i => i.role === 'Expert')} />
       </div>
       
       <div className="section">
         <h2>TL Mobile</h2>
         <InterviewersForm addInterviewer={addInterviewer} role="TL Mobile" />
-        <button onClick={generatePairsTlMobile}>Generate TL Mobile Pairs</button>
-        <PairsDisplay pairs={tlMobilePairs} />
+        <button onClick={() => generateTlMobile('Android')}>Select TL Mobile for Android</button>
+        <button onClick={() => generateTlMobile('iOS')}>Select TL Mobile for iOS</button>
+        {tlMobileAndroid && (
+          <div className="pairs-container">
+            <h2>Selected TL Mobile for Android</h2>
+            <ul>
+              <li className="selected-expert-item">
+                {tlMobileAndroid.name} - Interviews: {tlMobileAndroid.counter}
+              </li>
+            </ul>
+          </div>
+        )}
+        {tlMobileIOS && (
+          <div className="pairs-container">
+            <h2>Selected TL Mobile for iOS</h2>
+            <ul>
+              <li className="selected-expert-item">
+                {tlMobileIOS.name} - Interviews: {tlMobileIOS.counter}
+              </li>
+            </ul>
+          </div>
+        )}
         <InterviewersList interviewers={interviewers.filter(i => i.role === 'TL Mobile')} />
       </div>
     </div>
