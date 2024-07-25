@@ -1,0 +1,26 @@
+/* src/components/InterviewersList.css */
+.interviewers-container {
+  margin-top: 20px;
+}
+
+.interviewers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.interviewers-table th,
+.interviewers-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.interviewers-table th {
+  background-color: #f2f2f2;
+  color: #000; /* Color de texto en negro */
+  text-align: center;
+}
+
+.interviewers-table td {
+  text-align: center;
+}
