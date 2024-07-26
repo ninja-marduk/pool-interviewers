@@ -180,7 +180,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Pool Interviewers Pairs Generator</h1>
+      <h1>Credits - Pool Interviewers Generator</h1>
       <div className="averages">
         <p>Average Old Counter: {averageOldCounter.toFixed(2)}</p>
         <p>Average New Counter: {averageNewCounter.toFixed(2)}</p>
@@ -189,7 +189,7 @@ function App() {
       <div className="section">
         <h2>Team Leaders (TL)</h2>
         <InterviewersForm addInterviewer={addInterviewer} role="TL" />
-        <button onClick={generatePairsTL}>Generate TL Pairs</button>
+        <button onClick={generatePairsTL}>Generate Pairs - TL Backend</button>
         <PairsDisplay pairs={pairs} />
         <InterviewersList interviewers={interviewers.filter(i => i.role === 'TL')} />
       </div>

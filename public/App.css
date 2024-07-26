@@ -15,7 +15,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  max-width: 800px;
+  max-width: 1000px;
   width: 100%;
   margin: 20px;
 }
@@ -29,12 +29,15 @@ h1 {
   margin: 20px 0;
   display: flex;
   justify-content: space-around;
+  flex-wrap: wrap;
 }
 
 .averages p {
   margin: 5px 0;
   font-size: 18px;
   color: #666;
+  flex: 1 1 100px;
+  text-align: center;
 }
 
 button {
@@ -46,6 +49,8 @@ button {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+  width: 100%;
+  max-width: 300px;
 }
 
 button:hover {
@@ -106,4 +111,110 @@ li {
   width: fit-content;
   font-weight: bold;
   display: inline-block;
+}
+
+.section {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section h2 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.interviewers-container {
+  margin-top: 20px;
+}
+
+.interviewers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.interviewers-table th,
+.interviewers-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.interviewers-table th {
+  background-color: #f2f2f2;
+  color: #000; /* Color de texto en negro */
+  text-align: center;
+}
+
+.interviewers-table td {
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .App {
+    padding: 10px;
+  }
+
+  .averages {
+    flex-direction: column;
+  }
+
+  form {
+    gap: 5px;
+  }
+
+  form input, form select, form button {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 8px;
+    font-size: 14px;
+    max-width: 100%;
+  }
+
+  .pair-item, .selected-expert-item {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .section {
+    padding: 10px;
+  }
+
+  .interviewers-table th, .interviewers-table td {
+    padding: 5px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .averages p {
+    font-size: 16px;
+  }
+
+  form input, form select, form button {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  button {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .pair-item, .selected-expert-item {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .interviewers-table th, .interviewers-table td {
+    padding: 3px;
+    font-size: 12px;
+  }
 }
