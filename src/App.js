@@ -13,6 +13,7 @@ function App() {
   const [pairs, setPairs] = useState([]);
   const [averageOldCounter, setAverageOldCounter] = useState(0);
   const [averageNewCounter, setAverageNewCounter] = useState(0);
+  const [tlBack, settlBack] = useState(null);
   const [expert, setExpert] = useState(null);
   const [tlMobileAndroid, setTlMobileAndroid] = useState(null);
   const [tlMobileIOS, setTlMobileIOS] = useState(null);
@@ -77,7 +78,7 @@ function App() {
     const total = interviewers.reduce((sum, i) => sum + i.counter, 0);
     return total / interviewers.length;
   };
-
+/*
   const generatePairsTL = async () => {
     const tlNew = interviewers.filter(i => i.role === 'TL' && i.seniority === 'New');
     const tlOld = interviewers.filter(i => i.role === 'TL' && i.seniority === 'Old');
@@ -128,6 +129,37 @@ function App() {
       old: `${oldInterviewer.name} [${oldInterviewer.seniority}]`
     };
     setPairs([newPair]);
+  };
+  */
+
+  const generateTLBack = async () => {
+    const tlsBack = interviewers.filter(i => i.role === 'TL')
+    if (tlsBack.length === 0) {
+      alert('No TL Back available');
+      return;
+    }
+
+    const selectedTLBack = weightedRandomInterviewer(tlsBack);
+
+    if (!selectedTLBack) {
+      alert('Error selecting TL Back');
+      return;
+    }
+
+    // Actualizar el contador y la fecha de última entrevista en Firestore
+    const tlBackRef = doc(firestore, "interviewers", selectedTLBack.id);
+
+    await updateDoc(tlBackRef, {
+      counter: increment(1),
+      dateLastInterview: new Date().toISOString().split('T')[0],
+    });
+
+    // Actualizar el estado
+    settlBack({
+      name: selectedTLBack.name,
+      counter: selectedTLBack.counter + 1,
+      dateLastInterview: selectedTLBack.dateLastInterview
+    });
   };
 
   const generateExpert = async () => {
@@ -209,8 +241,18 @@ function App() {
       <div className="section">
         <h2>Team Leaders (TL)</h2>
         <InterviewersForm addInterviewer={addInterviewer} role="TL" />
-        <button onClick={generatePairsTL}>Generate Pairs - TL Backend</button>
-        <PairsDisplay pairs={pairs} />
+        <button onClick={generateTLBack}>Select TL Backend</button>
+        {/* <PairsDisplay pairs={pairs} /> */}
+        {tlBack && (
+          <div className="pairs-container">
+            <h2>Selected Expert</h2>
+            <ul>
+              <li className="selected-expert-item">
+                {tlBack.name} - Interviews: {tlBack.counter}
+              </li>
+            </ul>
+          </div>
+        )}
         <InterviewersList interviewers={interviewers.filter(i => i.role === 'TL')} />
       </div>
       
