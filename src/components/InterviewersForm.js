@@ -14,7 +14,8 @@ function InterviewersForm({ addInterviewer, role }) {
       role,
       dateJoined,
       counter: 0,
-      dateLastInterview
+      dateLastInterview,
+      status: 'active' // Establece el estado por defecto en 'active'
     };
 
     if (role === 'TL') {
