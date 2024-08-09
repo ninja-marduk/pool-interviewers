@@ -13,11 +13,9 @@ function InterviewersList({ interviewers }) {
       await updateDoc(interviewerRef, {
         status: newStatus
       });
-
-      // Actualiza localmente el estado de los entrevistadores
-      interviewer(interviewers.map(i => i.id === interviewer.id ? { ...i, status: newStatus } : i ));
-
       alert(`Status of ${interviewer.name} has been changed to ${newStatus}`);
+       // Actualiza localmente el estado de los entrevistadores
+       interviewer(interviewers.map(i => i.id === interviewer.id ? { ...i, status: newStatus } : i ));
     } catch (error) {
       console.error("Error updating status: ", error);
     }
