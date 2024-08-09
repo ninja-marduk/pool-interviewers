@@ -5,6 +5,7 @@ function InterviewersForm({ addInterviewer, role }) {
   const [dateJoined, setDateJoined] = useState('');
   const [seniority, setSeniority] = useState('New');
   const [soMobile, setSoMobile] = useState('Android');
+  const [dateLastInterview, setDateLastInterview] = useState(new Date()); // Nuevo estado para la fecha de la última entrevista
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,7 +13,8 @@ function InterviewersForm({ addInterviewer, role }) {
       name,
       role,
       dateJoined,
-      counter: 0
+      counter: 0,
+      dateLastInterview
     };
 
     if (role === 'TL') {
@@ -28,6 +30,8 @@ function InterviewersForm({ addInterviewer, role }) {
     setDateJoined('');
     setSeniority('New');
     setSoMobile('Android');
+    setDateLastInterview(new Date());
+
   };
 
   return (

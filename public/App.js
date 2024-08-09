@@ -22,6 +22,7 @@ function App() {
       const interviewersData = snapshot.docs.map(doc => ({
         id: doc.id,
         counter: doc.data().counter || 0,
+        dateLastInterview: doc.data().dateLastInterview || null,
         ...doc.data()
       }));
       setInterviewers(interviewersData);
@@ -46,18 +47,29 @@ function App() {
   };
 
   const weightedRandomInterviewer = (interviewers) => {
-    const weights = interviewers.map(interviewer => 1 / (interviewer.counter + 1));
-    const sumOfWeights = weights.reduce((a, b) => a + b, 0);
-    const random = Math.random() * sumOfWeights;
-
-    let runningSum = 0;
-    for (let i = 0; i < interviewers.length; i++) {
-      runningSum += weights[i];
-      if (random < runningSum) {
-        return interviewers[i];
-      }
+    const today = new Date();
+  const weights = interviewers.map(interviewer => {
+    if (interviewer.dateLastInterview) {
+      const daysSinceLastInterview = (today - new Date(interviewer.dateLastInterview)) / (1000 * 60 * 60 * 24);
+      const timeFactor = daysSinceLastInterview > 0 ? daysSinceLastInterview : 1; // Evita división por cero
+      return (1 / (interviewer.counter + 1)) * timeFactor; // Penaliza a entrevistadores con fechas más recientes
+    } else {
+      // Si dateLastInterview es null, no penalizar
+      return 1 / (interviewer.counter + 1);
     }
-    return interviewers[0];  // Fallback, should not reach here
+  });
+
+  const sumOfWeights = weights.reduce((a, b) => a + b, 0);
+  const random = Math.random() * sumOfWeights;
+
+  let runningSum = 0;
+  for (let i = 0; i < interviewers.length; i++) {
+    runningSum += weights[i];
+    if (random < runningSum) {
+      return interviewers[i];
+    }
+  }
+  return interviewers[0]; // Fallback, debería retornar aquí solo en caso de error
   };
 
   const calculateAverageCounter = (interviewers) => {
@@ -95,16 +107,19 @@ function App() {
       return;
     }
 
-    // Actualizar los contadores en Firestore
+    // Actualizar los contadores en Firestore y la fecha de última entrevista
     const newInterviewerRef = doc(firestore, "interviewers", newInterviewer.id);
     const oldInterviewerRef = doc(firestore, "interviewers", oldInterviewer.id);
+    const currentDate = new Date().toISOString().split('T')[0]; // Fecha actual
 
     await updateDoc(newInterviewerRef, {
-      counter: increment(1)
+      counter: increment(1),
+      dateLastInterview: currentDate
     });
 
     await updateDoc(oldInterviewerRef, {
-      counter: increment(1)
+      counter: increment(1),
+      dateLastInterview: currentDate
     });
 
     // Crear el par y actualizar el estado
@@ -129,17 +144,19 @@ function App() {
       return;
     }
 
-    // Actualizar el contador en Firestore
+    // Actualizar el contador y la fecha de última entrevista en Firestore
     const expertRef = doc(firestore, "interviewers", selectedExpert.id);
 
     await updateDoc(expertRef, {
-      counter: increment(1)
+      counter: increment(1),
+      dateLastInterview: new Date().toISOString().split('T')[0],
     });
 
     // Actualizar el estado
     setExpert({
       name: selectedExpert.name,
-      counter: selectedExpert.counter + 1
+      counter: selectedExpert.counter + 1,
+      dateLastInterview: selectedExpert.dateLastInterview
     });
   };
 
@@ -161,19 +178,22 @@ function App() {
     const tlMobileRef = doc(firestore, "interviewers", selectedTlMobile.id);
 
     await updateDoc(tlMobileRef, {
-      counter: increment(1)
+      counter: increment(1),
+      dateLastInterview: new Date().toISOString().split('T')[0],
     });
 
     // Actualizar el estado
     if (os === 'Android') {
       setTlMobileAndroid({
         name: selectedTlMobile.name,
-        counter: selectedTlMobile.counter + 1
+        counter: selectedTlMobile.counter + 1,
+        dateLastInterview: selectedTlMobile.dateLastInterview
       });
     } else {
       setTlMobileIOS({
         name: selectedTlMobile.name,
-        counter: selectedTlMobile.counter + 1
+        counter: selectedTlMobile.counter + 1,
+        dateLastInterview: selectedTlMobile.dateLastInterview
       });
     }
   };

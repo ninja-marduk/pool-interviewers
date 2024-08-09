@@ -21,11 +21,13 @@ function InterviewersList({ interviewers }) {
             <th>Seniority</th>
             <th>SO Mobile</th>
             <th>Interviews</th>
+            <th>Date Last Interview</th>
           </tr>
         </thead>
         <tbody>
           {sortedInterviewers.map((interviewer, index) => {
             const dateJoined = new Date(interviewer.dateJoined).toISOString().split('T')[0];
+            const dateLastInterview = interviewer.dateLastInterview ? new Date(interviewer.dateLastInterview).toISOString().split('T')[0] : '';
             return (
               <tr key={index}>
                 <td>{interviewer.name}</td>
@@ -34,6 +36,7 @@ function InterviewersList({ interviewers }) {
                 <td>{interviewer.seniority || 'N/A'}</td>
                 <td>{interviewer.soMobile || 'N/A'}</td>
                 <td>{interviewer.counter}</td>
+                <td>{dateLastInterview}</td>
               </tr>
             );
           })}
