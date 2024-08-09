@@ -48,7 +48,7 @@ function App() {
   };
 
   const weightedRandomInterviewer = (interviewers) => {
-    const today = new Date();
+  const today = new Date();
   const weights = interviewers.map(interviewer => {
     if (interviewer.dateLastInterview) {
       const daysSinceLastInterview = (today - new Date(interviewer.dateLastInterview)) / (1000 * 60 * 60 * 24);
@@ -133,7 +133,7 @@ function App() {
   */
 
   const generateTLBack = async () => {
-    const tlsBack = interviewers.filter(i => i.role === 'TL')
+    const tlsBack = interviewers.filter(i => i.role === 'TL' && i.status === 'active')
     if (tlsBack.length === 0) {
       alert('No TL Back available');
       return;
@@ -163,7 +163,7 @@ function App() {
   };
 
   const generateExpert = async () => {
-    const experts = interviewers.filter(i => i.role === 'Expert');
+    const experts = interviewers.filter(i => i.role === 'Expert'  && i.status === 'active');
     if (experts.length === 0) {
       alert('No experts available');
       return;
@@ -193,7 +193,7 @@ function App() {
   };
 
   const generateTlMobile = async (os) => {
-    const tlMobile = interviewers.filter(i => i.role === 'TL Mobile' && i.soMobile === os);
+    const tlMobile = interviewers.filter(i => i.role === 'TL Mobile' && i.soMobile === os && i.status === 'active');
     if (tlMobile.length === 0) {
       alert(`No TL Mobile available for ${os}`);
       return;
