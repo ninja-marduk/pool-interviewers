@@ -6,8 +6,13 @@ import InterviewersList from './components/InterviewersList';
 import './App.css';
 import './components/PairsDisplay.css';
 import './components/InterviewersList.css';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'; // Escuchar el estado de autenticación
+import Login from './components/Login';
+import Header from './components/Header';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Estado para la autenticación
+  const [loading, setLoading] = useState(true); // Estado para manejar la carga
   const [interviewers, setInterviewers] = useState([]);
   const [averageOldCounter, setAverageOldCounter] = useState(0);
   const [averageNewCounter, setAverageNewCounter] = useState(0);
@@ -37,11 +42,38 @@ function App() {
     setAverageOldCounter(calculateAverageCounter(tlOld));
   }, [interviewers]);
 
+  useEffect(() => {
+    const auth = getAuth();
+
+    // Escuchar cambios en el estado de autenticación
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Si el usuario está autenticado
+        setIsAuthenticated(true);
+      } else {
+        // Si no está autenticado
+        setIsAuthenticated(false);
+      }
+      setLoading(false); // Cuando se termina de verificar el estado
+    });
+
+    return () => unsubscribe(); // Limpiar el listener cuando se desmonta el componente
+  }, []);
+
   const addInterviewer = async (interviewer) => {
     try {
       await addDoc(collection(firestore, "interviewers"), interviewer);
     } catch (error) {
       console.error("Error adding interviewer: ", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
     }
   };
 
@@ -183,11 +215,22 @@ function App() {
         dateLastInterview: formattedDate
       });
     }
+  };
+   // Mostrar un mensaje de carga mientras se verifica la autenticación
+   if (loading) {
+    return <div>Cargando...</div>;
   }
 
+
+  // Si el usuario no está autenticado, mostrar el formulario de login
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  // Si el usuario está autenticado, mostrar la aplicación
   return (
     <div className="App">
-      <h1>Credits - Pool Interviewers Generator V0.01</h1>
+      <Header />
       <div className="averages">
         <p>Average Old Counter: {averageOldCounter.toFixed(2)}</p>
         <p>Average New Counter: {averageNewCounter.toFixed(2)}</p>

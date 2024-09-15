@@ -30,3 +30,18 @@ yarn-error.log*
 
 # Firebase configuration file
 firebaseConfig.js
+
+# Ignorar directorios de compilación específicos dentro de public
+/public/build/
+/public/dist/
+
+# Ignorar archivos de log si existen
+/public/*.log
+
+# No ignorar todo en public
+!/public/
+/public/*
+!/public/manifest.json
+!/public/index.html
+!/public/favicon.ico
+!/public/images/

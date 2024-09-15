@@ -12,5 +12,9 @@
         "destination": "/index.html"
       }
     ]
-  }
+  },
+  "scripts": {
+  "copy-src-to-public": "copyfiles -u 1 src/**/* public/",
+  "build-and-copy": "npm run copy-src-to-public && npm run build"
+}
 }

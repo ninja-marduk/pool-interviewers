@@ -20,6 +20,37 @@ body {
   margin: 20px;
 }
 
+/* src/App.css */
+.header {
+  background-color: #f0f0f0;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logout-button {
+  padding: 6px 12px; /* Reducido desde 8px 16px */
+  font-size: 14px; /* Reducido desde 16px */
+  background-color: #ff4d4f; /* Rojo ligero para indicar acción potencialmente crítica */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #ff7875; /* Rojo más claro para el hover */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.logout-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,77,79,0.4); /* Añade un borde sutil para el foco */
+}
+
 h1 {
   color: #333;
   margin-bottom: 20px;
