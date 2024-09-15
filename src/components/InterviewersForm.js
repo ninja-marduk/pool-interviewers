@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 
 function InterviewersForm({ addInterviewer, role }) {
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Mes en formato 2 dígitos
+    const day = String(d.getDate()).padStart(2, '0'); // Día en formato 2 dígitos
+    return `${year}-${month}-${day}`;
+  };
+
   const [name, setName] = useState('');
   const [dateJoined, setDateJoined] = useState('');
   const [seniority, setSeniority] = useState('New');
   const [soMobile, setSoMobile] = useState('Android');
-  const [dateLastInterview, setDateLastInterview] = useState(new Date()); // Nuevo estado para la fecha de la última entrevista
+  const [dateLastInterview, setDateLastInterview] = useState(formatDate(new Date())); // Nuevo estado para la fecha de la última entrevista
 
   const handleSubmit = async (e) => {
     e.preventDefault();

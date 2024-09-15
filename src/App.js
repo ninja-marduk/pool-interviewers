@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { firestore } from './firebaseConfig';
 import InterviewersForm from './components/InterviewersForm';
-import PairsDisplay from './components/PairsDisplay';
 import InterviewersList from './components/InterviewersList';
 import './App.css';
 import './components/PairsDisplay.css';
@@ -10,7 +9,6 @@ import './components/InterviewersList.css';
 
 function App() {
   const [interviewers, setInterviewers] = useState([]);
-  const [pairs, setPairs] = useState([]);
   const [averageOldCounter, setAverageOldCounter] = useState(0);
   const [averageNewCounter, setAverageNewCounter] = useState(0);
   const [tlBack, settlBack] = useState(null);
@@ -47,30 +45,30 @@ function App() {
     }
   };
 
-  const weightedRandomInterviewer = (interviewers) => {
-  const today = new Date();
-  const weights = interviewers.map(interviewer => {
-    if (interviewer.dateLastInterview) {
-      const daysSinceLastInterview = (today - new Date(interviewer.dateLastInterview)) / (1000 * 60 * 60 * 24);
-      const timeFactor = daysSinceLastInterview > 0 ? daysSinceLastInterview : 1; // Evita división por cero
-      return (1 / (interviewer.counter + 1)) * timeFactor; // Penaliza a entrevistadores con fechas más recientes
-    } else {
-      // Si dateLastInterview es null, no penalizar
-      return 1 / (interviewer.counter + 1);
+  const getOldestInterviewer = (interviewers) => {
+    // Filtrar primero los entrevistadores que no tienen fecha de última entrevista
+    const noDateInterviewers = interviewers.filter(i => !i.dateLastInterview);
+  
+    // Si existen entrevistadores sin fecha de última entrevista, seleccionar uno de ellos
+    if (noDateInterviewers.length > 0) {
+      return noDateInterviewers[0]; // Seleccionar el primero en la lista
     }
-  });
-
-  const sumOfWeights = weights.reduce((a, b) => a + b, 0);
-  const random = Math.random() * sumOfWeights;
-
-  let runningSum = 0;
-  for (let i = 0; i < interviewers.length; i++) {
-    runningSum += weights[i];
-    if (random < runningSum) {
-      return interviewers[i];
-    }
-  }
-  return interviewers[0]; // Fallback, debería retornar aquí solo en caso de error
+  
+    // Si todos los entrevistadores tienen fecha, seleccionar el que tiene la fecha más antigua
+    return interviewers.reduce((oldest, interviewer) => {
+      if (!oldest || new Date(interviewer.dateLastInterview) < new Date(oldest.dateLastInterview)) {
+        return interviewer;
+      }
+      return oldest;
+    }, null);
+  };
+  
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Mes en formato 2 dígitos
+    const day = String(d.getDate()).padStart(2, '0'); // Día en formato 2 dígitos
+    return `${year}-${month}-${day}`;
   };
 
   const calculateAverageCounter = (interviewers) => {
@@ -78,119 +76,73 @@ function App() {
     const total = interviewers.reduce((sum, i) => sum + i.counter, 0);
     return total / interviewers.length;
   };
-/*
-  const generatePairsTL = async () => {
-    const tlNew = interviewers.filter(i => i.role === 'TL' && i.seniority === 'New');
-    const tlOld = interviewers.filter(i => i.role === 'TL' && i.seniority === 'Old');
-
-    if (tlOld.length < 2 && tlNew.length === 0) {
-      alert('Not enough interviewers to generate pairs');
-      return;
-    }
-
-    const averageOldCounter = calculateAverageCounter(tlOld);
-    const averageNewCounter = calculateAverageCounter(tlNew);
-
-    let newInterviewer, oldInterviewer;
-
-    if (averageOldCounter > averageNewCounter && tlNew.length > 0) {
-      // Prioritize Old & New
-      newInterviewer = weightedRandomInterviewer(tlNew);
-      oldInterviewer = weightedRandomInterviewer(tlOld);
-    } else {
-      // Prioritize Old & Old
-      oldInterviewer = weightedRandomInterviewer(tlOld);
-      newInterviewer = weightedRandomInterviewer(tlOld.filter(i => i.id !== oldInterviewer.id));
-    }
-
-    if (!newInterviewer || !oldInterviewer) {
-      alert('Error generating pairs');
-      return;
-    }
-
-    // Actualizar los contadores en Firestore y la fecha de última entrevista
-    const newInterviewerRef = doc(firestore, "interviewers", newInterviewer.id);
-    const oldInterviewerRef = doc(firestore, "interviewers", oldInterviewer.id);
-    const currentDate = new Date().toISOString().split('T')[0]; // Fecha actual
-
-    await updateDoc(newInterviewerRef, {
-      counter: increment(1),
-      dateLastInterview: currentDate
-    });
-
-    await updateDoc(oldInterviewerRef, {
-      counter: increment(1),
-      dateLastInterview: currentDate
-    });
-
-    // Crear el par y actualizar el estado
-    const newPair = {
-      new: `${newInterviewer.name} [${newInterviewer.seniority}]`,
-      old: `${oldInterviewer.name} [${oldInterviewer.seniority}]`
-    };
-    setPairs([newPair]);
-  };
-  */
 
   const generateTLBack = async () => {
-    const tlsBack = interviewers.filter(i => i.role === 'TL' && i.status === 'active')
+    const tlsBack = interviewers.filter(i => i.role === 'TL' && i.status === 'active');
     if (tlsBack.length === 0) {
       alert('No TL Back available');
       return;
     }
-
-    const selectedTLBack = weightedRandomInterviewer(tlsBack);
-
+  
+    const selectedTLBack = getOldestInterviewer(tlsBack);
+  
     if (!selectedTLBack) {
       alert('Error selecting TL Back');
       return;
     }
-
+  
+    // Formatear la fecha antes de guardarla
+    const formattedDate = formatDate(new Date());
+  
     // Actualizar el contador y la fecha de última entrevista en Firestore
     const tlBackRef = doc(firestore, "interviewers", selectedTLBack.id);
-
+  
     await updateDoc(tlBackRef, {
       counter: increment(1),
-      dateLastInterview: new Date().toISOString().split('T')[0],
+      dateLastInterview: formattedDate, // Guardar la fecha en formato yyyy-mm-dd
     });
-
+  
     // Actualizar el estado
     settlBack({
       name: selectedTLBack.name,
       counter: selectedTLBack.counter + 1,
-      dateLastInterview: selectedTLBack.dateLastInterview
+      dateLastInterview: formattedDate
     });
   };
 
   const generateExpert = async () => {
-    const experts = interviewers.filter(i => i.role === 'Expert'  && i.status === 'active');
+    const experts = interviewers.filter(i => i.role === 'Expert' && i.status === 'active');
     if (experts.length === 0) {
       alert('No experts available');
       return;
     }
-
-    const selectedExpert = weightedRandomInterviewer(experts);
-
+  
+    const selectedExpert = getOldestInterviewer(experts);
+  
     if (!selectedExpert) {
       alert('Error selecting expert');
       return;
     }
 
+    // Formatear la fecha antes de guardarla
+    const formattedDate = formatDate(new Date());
+  
     // Actualizar el contador y la fecha de última entrevista en Firestore
     const expertRef = doc(firestore, "interviewers", selectedExpert.id);
-
+  
     await updateDoc(expertRef, {
       counter: increment(1),
-      dateLastInterview: new Date().toISOString().split('T')[0],
+      dateLastInterview: formattedDate, // Guardar la fecha en formato yyyy-mm-dd
     });
-
+  
     // Actualizar el estado
     setExpert({
       name: selectedExpert.name,
       counter: selectedExpert.counter + 1,
-      dateLastInterview: selectedExpert.dateLastInterview
+      dateLastInterview: formattedDate
     });
   };
+  
 
   const generateTlMobile = async (os) => {
     const tlMobile = interviewers.filter(i => i.role === 'TL Mobile' && i.soMobile === os && i.status === 'active');
@@ -198,41 +150,44 @@ function App() {
       alert(`No TL Mobile available for ${os}`);
       return;
     }
-
-    const selectedTlMobile = weightedRandomInterviewer(tlMobile);
-
+  
+    const selectedTlMobile = getOldestInterviewer(tlMobile);
+  
     if (!selectedTlMobile) {
       alert(`Error selecting TL Mobile for ${os}`);
       return;
     }
 
-    // Actualizar el contador en Firestore
+    // Formatear la fecha antes de guardarla
+    const formattedDate = formatDate(new Date());
+  
+    // Actualizar el contador y la fecha de última entrevista en Firestore
     const tlMobileRef = doc(firestore, "interviewers", selectedTlMobile.id);
-
+  
     await updateDoc(tlMobileRef, {
       counter: increment(1),
-      dateLastInterview: new Date().toISOString().split('T')[0],
+      dateLastInterview: formattedDate,
     });
-
-    // Actualizar el estado
+  
+    // Actualizar el estado según el sistema operativo
     if (os === 'Android') {
       setTlMobileAndroid({
         name: selectedTlMobile.name,
         counter: selectedTlMobile.counter + 1,
-        dateLastInterview: selectedTlMobile.dateLastInterview
+        dateLastInterview: formattedDate
       });
     } else {
       setTlMobileIOS({
         name: selectedTlMobile.name,
         counter: selectedTlMobile.counter + 1,
-        dateLastInterview: selectedTlMobile.dateLastInterview
+        dateLastInterview: formattedDate
       });
     }
-  };
+  }
 
   return (
     <div className="App">
-      <h1>Credits - Pool Interviewers Generator</h1>
+      <h1>Credits - Pool Interviewers Generator V0.01</h1>
       <div className="averages">
         <p>Average Old Counter: {averageOldCounter.toFixed(2)}</p>
         <p>Average New Counter: {averageNewCounter.toFixed(2)}</p>
@@ -242,10 +197,9 @@ function App() {
         <h2>Team Leaders (TL)</h2>
         <InterviewersForm addInterviewer={addInterviewer} role="TL" />
         <button onClick={generateTLBack}>Select TL Backend</button>
-        {/* <PairsDisplay pairs={pairs} /> */}
         {tlBack && (
           <div className="pairs-container">
-            <h2>Selected Expert</h2>
+            <h2>Selected TL Backend</h2>
             <ul>
               <li className="selected-expert-item">
                 {tlBack.name} - Interviews: {tlBack.counter}
@@ -303,5 +257,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
